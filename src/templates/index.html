@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GPT Text Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 16px;
+            text-align: left;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            min-height: 50px;
+            white-space: pre-wrap;
+            background-color: #f9f9f9;
+            text-align: left;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .loading {
+            opacity: 0.5;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            display: block;
+            margin-bottom: 20px;
+        }
+        .label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>GPT Text Generator</h1>
+    <form id="generateForm">
+        <textarea id="inputText" placeholder="Enter your text here..."></textarea>
+        <button type="submit">Generate</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('generateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const inputText = document.getElementById('inputText').value;
+            const resultDiv = document.getElementById('result');
+            const submitButton = document.querySelector('button[type="submit"]');
+            
+            // Show loading state
+            submitButton.disabled = true;
+            resultDiv.classList.add('loading');
+            resultDiv.textContent = 'Generating...';
+            
+            try {
+                const response = await fetch('/generate/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: inputText })
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `
+                    <div class="label">Input:</div>
+                    ${data.input_text}
+                    
+                    <div class="label" style="margin-top: 20px;">Generated continuation:</div>
+                    ${data.generated_text}
+                `;
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.textContent = 'Error generating text. Please try again.';
+            } finally {
+                // Reset loading state
+                submitButton.disabled = false;
+                resultDiv.classList.remove('loading');
+            }
+        });
+    </script>
+</body>
+</html>
